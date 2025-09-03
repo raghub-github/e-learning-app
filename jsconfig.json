@@ -3,5 +3,13 @@
     "paths": {
       "@/*": ["./src/*"]
     }
-  }
+  },
+  "include": [
+    "next-env.d.js",
+    ".next/types/**/*.js",
+    "**/*.js",
+    "**/*.jsx",
+    "src/app/middleware.js"
+  ],
+  "exclude": ["node_modules"]
 }
