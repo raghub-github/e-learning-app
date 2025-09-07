@@ -40,9 +40,50 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
 !.env.example
 .vscode
 .DS_Store
 pnpm-lock.yaml
 yarn.lock
+
+# Node
+.pnp.js
+
+# Next build / output
+dist/
+.cache/
+
+# Env
+.env.local
+.env.test
+.env.*.local
+.env.*.test
+.env.production
+.env.production.local
+
+# Logs
+logs/
+*.log
+pids/
+*.pid
+*.seed
+
+# Editor/IDE
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+.env.docker
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+
+# Misc
+coverage/
+coverage-final.json
