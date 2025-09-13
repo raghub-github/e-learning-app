@@ -1,11 +1,12 @@
 // src/app/api/search/route.js
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb'; // your MongoDB connection
+import clientPromise from '@/lib/mongodb';
 import { buildPdfSearchPipeline } from '@/lib/atlasSearch';
+
+export const revalidate = 60; // cache responses for 60s at CDN layer
 
 export async function GET(req) {
   try {
-    // Parse query parameters
     const { searchParams } = new URL(req.url);
 
     const q = searchParams.get('q') || '';
@@ -15,16 +16,14 @@ export async function GET(req) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-    // Parse locations as array (comma-separated)
     const locationsParam = searchParams.get('locations');
     const locations = locationsParam ? locationsParam.split(',').map(l => l.trim()) : [];
 
-    // MongoDB client
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
-    const collection = db.collection('pdfs'); // make sure this matches your schema
+    const collection = db.collection('pdfs');
 
-    // Build pipeline
+    // Build Atlas Search pipeline
     const pipeline = buildPdfSearchPipeline({
       q,
       language,
@@ -35,19 +34,24 @@ export async function GET(req) {
       limit,
     });
 
-    // Run aggregation
     const aggResult = await collection.aggregate(pipeline).toArray();
-
     const results = aggResult[0]?.results || [];
     const total = aggResult[0]?.totalCount?.[0]?.count || 0;
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       results,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+    };
+
+    // Send Edge-optimized SEO response
+    return NextResponse.json(responseData, {
+      headers: {
+        'Cache-Control': 's-maxage=60, stale-while-revalidate=30', // Edge cache 60s
+      },
     });
   } catch (error) {
     console.error('Search API Error:', error);
